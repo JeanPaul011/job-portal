@@ -1,0 +1,20 @@
+.saved-jobs-page h2 {
+    color: #007bff;
+  }
+  
+  .saved-job-card {
+    border: 1px solid #eaeaea;
+    transition: all 0.3s ease;
+  }
+  
+  .saved-job-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .job-desc {
+    font-size: 0.95rem;
+    color: #555;
+    margin: 0.5rem 0 1rem;
+  }
+  

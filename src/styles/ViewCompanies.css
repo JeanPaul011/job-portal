@@ -1,0 +1,42 @@
+.company-card {
+    background-color: #fff;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .company-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  .company-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .company-description {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    min-height: 60px;
+  }
+  .pagination-wrapper .pagination .page-item .page-link {
+    color: #007bff;
+    font-weight: 500;
+    transition: background 0.3s;
+  }
+  
+  .pagination-wrapper .pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+  }
+  
+  .pagination-wrapper .pagination .page-link:hover {
+    background-color: #e6f0ff;
+  }
+  
