@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/PostJobs.css';
+import { postJob } from '../services/jobService';
+
 
 const PostJobs = () => {
     const { token, role } = useAuth();
@@ -46,62 +48,33 @@ const PostJobs = () => {
         e.preventDefault();
         const validationErrors = validate();
         if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
+          setErrors(validationErrors);
+          return;
         }
-
+      
         setSubmitting(true);
         try {
-            console.log('🔐 Token being sent:', token); // 👈 Add this here
-            const response = await fetch('https://localhost:5276/api/jobs', {
-                method: 'POST',
-                
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    title: form.title,
-                    description: form.description,
-                    location: form.location,
-                    salary: parseFloat(form.salary),
-                    jobType: form.jobType,
-                    companyName: form.companyName
-                })
-            });
-
-            if (!response.ok) {
-                let errorMessage = 'Failed to post job';
-
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.message || errorMessage;
-                } catch {
-                    // Silent fallback, likely no response body
-                }
-
-                throw new Error(errorMessage);
-
-            }
-
-            // Reset form and navigate
-            setForm({
-                title: '',
-                description: '',
-                location: '',
-                salary: '',
-                jobType: '',
-                companyName: ''
-            });
-            navigate('/jobs');
+          console.log('🔐 Token being sent:', token);
+          await postJob(form, token);
+      
+          setForm({
+            title: '',
+            description: '',
+            location: '',
+            salary: '',
+            jobType: '',
+            companyName: ''
+          });
+      
+          navigate('/jobs');
         } catch (error) {
-            console.error('Error posting job:', error);
-            alert(error.message);
+          console.error('Error posting job:', error);
+          alert(error.message);
         } finally {
-            setSubmitting(false);
+          setSubmitting(false);
         }
-    };
-
+      };
+      
     return (
         <div className="post-job-container container py-5">
             <h2 className="text-center fw-bold mb-4">Post a New Job</h2>

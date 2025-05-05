@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/FindJobs.css';
 import { FaMapMarkerAlt, FaClock, FaMoneyBillWave } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
+import { getSavedJobs } from '../utils/localStorageUtils';
 
 const SavedJobs = () => {
   const { token, user } = useAuth();
@@ -11,8 +12,7 @@ const SavedJobs = () => {
 
   useEffect(() => {
     if (token && user?.email) {
-      const savedKey = `savedJobs_${user.email}`;
-      const saved = JSON.parse(localStorage.getItem(savedKey)) || [];
+      const saved = getSavedJobs(user.email);
       setSavedJobs(saved);
     }
   }, [token, user]);

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { loginUser, registerUser } from '../services/authService';
 
 
 
@@ -64,51 +65,37 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post('https://localhost:5276/api/account/login', {
-        email,
-        password,
-      });
-
-      const { token, refreshToken, role, fullName, email: userEmail } = res.data;
-
+      const res = await loginUser(email, password);
+      const { token, refreshToken, role, fullName, email: userEmail } = res;
+  
       const userData = { email: userEmail, fullName };
-
+  
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('loginTime', Date.now().toString());
-
+  
       setToken(token);
       setUser(userData);
       setRole(role);
       setLoginTime(Date.now().toString());
-
-      // Start the logout timer after successful login
       startLogoutTimer();
-
-      navigate('/'); // redirect after login
+      navigate('/');
     } catch (error) {
       alert('Login failed: ' + (error.response?.data || error.message));
     }
   };
-
+  
   const register = async (fullName, email, password, role) => {
     try {
-      const res = await axios.post('https://localhost:5276/api/account/register', {
-        fullName,
-        email,
-        password,
-        role
-      });
-
-      if (res.status === 200) {
-        alert('Registration successful. You can now log in.');
-        navigate('/account');
-      }
+      await registerUser(fullName, email, password, role);
+      alert('Registration successful. You can now log in.');
+      navigate('/account');
     } catch (error) {
       alert('Registration failed: ' + error.response?.data || error.message);
     }
   };
+  
 
   const logout = () => {
     localStorage.removeItem('token');

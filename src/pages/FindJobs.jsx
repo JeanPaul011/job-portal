@@ -5,6 +5,8 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchAllJobs } from '../services/jobService';
+
 
 const FindJobs = () => {
     const navigate = useNavigate();
@@ -44,15 +46,7 @@ const FindJobs = () => {
 
     const fetchJobs = async () => {
         try {
-            const response = await fetch('https://localhost:5276/api/jobs', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) throw new Error('Failed to fetch jobs');
-            
-            const data = await response.json();
+            const data = await fetchAllJobs(token);
             setJobs(data);
             setFilteredJobs(data);
         } catch (err) {
@@ -62,6 +56,7 @@ const FindJobs = () => {
             setLoading(false);
         }
     };
+    
 
     const toggleSave = (job) => {
         if (!user?.email) return;
