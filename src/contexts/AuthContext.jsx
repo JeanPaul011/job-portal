@@ -1,16 +1,11 @@
+// Updated AuthContext.jsx with email verification support
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, registerUser } from '../services/authService';
 
-
-
 const AuthContext = createContext();
 
-// For testing purposes, you can adjust this (in milliseconds)
 const AUTO_LOGOUT_TIME = 60 * 60 * 1000; // 60 minutes
-// For testing, you might want to use a shorter time like:
-// const AUTO_LOGOUT_TIME = 1 * 60 * 1000; // 1 minute
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
@@ -21,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [logoutTimer, setLogoutTimer] = useState(null);
 
   const startLogoutTimer = () => {
-    // Clear any existing timer
     if (logoutTimer) {
       clearTimeout(logoutTimer);
     }
@@ -33,10 +27,8 @@ export const AuthProvider = ({ children }) => {
       const remainingTime = AUTO_LOGOUT_TIME - elapsedTime;
 
       if (remainingTime <= 0) {
-        // Time has already expired
         handleAutoLogout();
       } else {
-        // Set new timer
         const timer = setTimeout(() => {
           handleAutoLogout();
         }, remainingTime);
@@ -46,16 +38,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const handleAutoLogout = () => {
-    // Show alert to user
     alert('Your session has expired due to inactivity. You will be logged out.');
     logout();
   };
 
-  // Initialize timer on mount and when loginTime changes
   useEffect(() => {
     startLogoutTimer();
     
-    // Cleanup timer on unmount
     return () => {
       if (logoutTimer) {
         clearTimeout(logoutTimer);
@@ -66,9 +55,19 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await loginUser(email, password);
-      const { token, refreshToken, role, fullName, email: userEmail } = res;
+      
+      // Check if email verification is required
+      if (res.emailVerificationRequired) {
+        throw new Error('Please verify your email before logging in.');
+      }
+      
+      const { token, refreshToken, role, fullName, email: userEmail, emailVerified } = res;
   
-      const userData = { email: userEmail, fullName };
+      const userData = { 
+        email: userEmail, 
+        fullName,
+        emailVerified: emailVerified || false
+      };
   
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
@@ -82,20 +81,33 @@ export const AuthProvider = ({ children }) => {
       startLogoutTimer();
       navigate('/');
     } catch (error) {
-      alert('Login failed: ' + (error.response?.data || error.message));
+      console.error('Login error:', error);
+      throw error; // Re-throw so component can handle it
     }
   };
   
   const register = async (fullName, email, password, role) => {
     try {
-      await registerUser(fullName, email, password, role);
-      alert('Registration successful. You can now log in.');
-      navigate('/account');
+      const response = await registerUser(fullName, email, password, role);
+      
+      // Check if the response includes verification info
+      if (response.verificationRequired) {
+        // Return verification info to component
+        return {
+          verificationRequired: true,
+          verificationLink: response.verificationLink,
+          message: response.message
+        };
+      } else {
+        alert('Registration successful. You can now log in.');
+        navigate('/account');
+        return { verificationRequired: false };
+      }
     } catch (error) {
-      alert('Registration failed: ' + error.response?.data || error.message);
+      console.error('Registration error:', error);
+      throw error;
     }
   };
-  
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -110,7 +122,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, role, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      token, 
+      user, 
+      role, 
+      login, 
+      register, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );
